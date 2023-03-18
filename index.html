@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Custom Alphabet Input</title>
+	<style>
+		body {
+			background-color: #e0dbdb;
+			font-family: Arial, sans-serif;
+			font-size: 18px;
+			margin: 0;
+			padding: 0;
+		}
+
+		body.dark {
+			background-color: #282c34;
+			color: #ffffff;
+		}
+
+		#container {
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+		}
+
+		#input {
+			border: none;
+			border-radius: 5px;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.308);
+			font-size: 24px;
+			outline: none;
+			padding: 10px;
+			width: 500px;
+			background-color: #ffffff;
+			color: #000000;
+		}
+
+		#input.dark {
+			background-color: rgba(0, 0, 0, 0.308);
+			color: #ffffff;
+		}
+
+		#encrypt-button,
+		#clear-button,
+		#theme-button,
+		#copy-button {
+			margin-left: 10px;
+			background-color: #ffffff;
+			border: none;
+			border-radius: 50%;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+			color: #000000;
+			cursor: pointer;
+			font-size: 18px;
+			outline: none;
+			padding: 10px;
+			width: 50px;
+			height: 50px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#encrypt-button img,
+		#clear-button img,
+		#theme-button img,
+		#copy-button img {
+			max-width: 100%;
+			height: auto;
+		}
+
+		#encrypt-button.dark,
+		#clear-button.dark,
+		#theme-button.dark,
+		#copy-button.dark {
+			background-color: rgba(0, 0, 0, 0.308);
+			color: #ffffff;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="container">
+		<input type="text" id="input" placeholder="Type Here..">
+		<button id="copy-button"><img src="https://img.icons8.com/windows/32/000000/copy.png" /></button>
+		<button id="theme-button"><img src="https://img.icons8.com/windows/32/000000/sun.png" /></button>
+		<button id="clear-button"><img src="https://img.icons8.com/windows/32/000000/clear-symbol.png" /></button>
+	</div>
+
+	<script>
+		const alphabet = {
+			'a': '◸◤',
+			'b': '◸◥',
+			'c': '◸◣',
+			'd': '◸◢',
+			'e': '△◤',
+			'f': '△◥',
+			'g': '△◣',
+			'h': '△◢',
+			'i': '◹◤',
+			'j': '◹◥',
+			'k': '◹◣',
+			'l': '◹◢',
+			'm': '▷◤',
+			'n': '▷◥',
+			'o': '▷◣',
+			'p': '▷◢',
+			'q': '◿◤',
+			'r': '◿◥',
+			's': '◿◣',
+			't': '◿◢',
+			'u': '▽◤',
+			'v': '▽◥',
+			'w': '▽◣',
+			'x': '▽◢',
+			'y': '◺◤',
+			'z': '◺◥',
+		};
+
+		const theme = localStorage.getItem('theme');
+		const input = document.getElementById('input');
+
+		const copyButton = document.getElementById('copy-button');
+		const themeButton = document.getElementById('theme-button');
+		const clearButton = document.getElementById('clear-button');
+
+		input.value = localStorage.getItem('value') || '';
+
+		input.addEventListener('input', function () {
+			let newValue = '';
+
+			for (let i = 0; i < input.value.length; i++) {
+				const char = input.value[i].toLowerCase();
+
+				if (alphabet[char]) newValue += alphabet[char];
+				else newValue += char;
+			}
+
+			input.value = newValue;
+			localStorage.setItem('value', input.value);
+		});
+
+		if (theme === 'dark') {
+			document.body.classList.add('dark');
+			document.getElementById('input').classList.add('dark');
+
+			themeButton.classList.add('dark');
+			themeButton.innerHTML = '<img src="https://img.icons8.com/windows/32/ffffff/moon.png"/>';
+
+			clearButton.classList.add('dark');
+			clearButton.innerHTML = '<img src="https://img.icons8.com/windows/32/ffffff/clear-symbol.png"/>';
+
+			copyButton.classList.add('dark');
+			copyButton.innerHTML = '<img src="https://img.icons8.com/windows/32/ffffff/copy.png"/>';
+		}
+
+		themeButton.addEventListener('click', () => {
+			document.body.classList.toggle('dark');
+			document.getElementById('input').classList.toggle('dark');
+
+			themeButton.classList.toggle('dark');
+			copyButton.classList.toggle('dark');
+			clearButton.classList.toggle('dark');
+
+			if (document.body.classList.contains('dark')) {
+				localStorage.setItem('theme', 'dark');
+
+				themeButton.innerHTML = '<img src="https://img.icons8.com/windows/32/ffffff/moon.png"/>';
+				clearButton.innerHTML = '<img src="https://img.icons8.com/windows/32/ffffff/clear-symbol.png"/>';
+				copyButton.innerHTML = '<img src="https://img.icons8.com/windows/32/ffffff/copy.png"/>';
+			} else {
+				localStorage.setItem('theme', 'light');
+
+				themeButton.innerHTML = '<img src="https://img.icons8.com/windows/32/000000/sun.png"/>';
+				clearButton.innerHTML = '<img src="https://img.icons8.com/windows/32/000000/clear-symbol.png"/>';
+				copyButton.innerHTML = '<img src="https://img.icons8.com/windows/32/000000/copy.png"/>';
+			}
+		});
+
+		copyButton.addEventListener('click', () => {
+			input.select(); document.execCommand('copy');
+
+			if (document.body.classList.contains('dark')) copyButton.innerHTML = '<img src="https://img.icons8.com/material-outlined/24/ffffff/checkmark--v2.png"/>';
+			else copyButton.innerHTML = '<img src="https://img.icons8.com/material-outlined/24/000000/checkmark--v2.png"/>';
+
+			setTimeout(() => {
+				if (document.body.classList.contains('dark')) copyButton.innerHTML = '<img src="https://img.icons8.com/material-outlined/24/ffffff/copy--v1.png"/>';
+				else copyButton.innerHTML = '<img src="https://img.icons8.com/material-outlined/24/000000/copy--v1.png"/>';
+			}, 1500);
+		});
+
+		clearButton.addEventListener('click', () => {
+			input.value = '';
+			input.focus();
+		});
+	</script>
+</body>
+
+</html>
