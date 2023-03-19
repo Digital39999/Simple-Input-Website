@@ -19,30 +19,66 @@
 
 		#container {
 			display: flex;
-			flex-direction: row;
+			flex-direction: column;
 			justify-content: center;
 			align-items: center;
 			height: 100vh;
 		}
 
-		#input {
+		.input-group,
+		.button-group {
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+
+		.input-group {
+			width: 100%;
+		}
+
+		.button-group button {
+			margin-left: 10px;
+			background-color: #ffffff;
 			border: none;
-			border-radius: 5px;
+			border-radius: 50%;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+			color: #000000;
+			cursor: pointer;
+			font-size: 18px;
+			outline: none;
+			padding: 10px;
+			width: 50px;
+			height: 50px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.button-group button img {
+			max-width: 100%;
+			height: auto;
+		}
+
+		#input,
+		#readonly-input {
+			border: none;
 			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.308);
 			font-size: 24px;
 			outline: none;
 			padding: 10px;
-			width: 500px;
+			width: 70%;
 			background-color: #ffffff;
 			color: #000000;
 		}
 
+		#readonly-input.dark,
 		#input.dark {
 			background-color: rgba(0, 0, 0, 0.308);
 			color: #ffffff;
 		}
 
-		#encrypt-button,
 		#clear-button,
 		#theme-button,
 		#copy-button {
@@ -63,7 +99,6 @@
 			align-items: center;
 		}
 
-		#encrypt-button img,
 		#clear-button img,
 		#theme-button img,
 		#copy-button img {
@@ -71,7 +106,6 @@
 			height: auto;
 		}
 
-		#encrypt-button.dark,
 		#clear-button.dark,
 		#theme-button.dark,
 		#copy-button.dark {
@@ -83,11 +117,19 @@
 
 <body>
 	<div id="container">
-		<input type="text" id="input" placeholder="Type Here..">
-		<button id="copy-button"><img src="https://img.icons8.com/windows/32/000000/copy.png" /></button>
-		<button id="theme-button"><img src="https://img.icons8.com/windows/32/000000/sun.png" /></button>
-		<button id="clear-button"><img src="https://img.icons8.com/windows/32/000000/clear-symbol.png" /></button>
+		<div class="input-group">
+			<input type="text" id="input" placeholder="Type Here..">
+		</div>
+		<div class="input-group">
+			<input type="text" id="readonly-input" readonly placeholder="Decrypted Text..">
+		</div>
+		<div class="button-group">
+			<button id="copy-button"><img src="https://img.icons8.com/windows/32/000000/copy.png" /></button>
+			<button id="theme-button"><img src="https://img.icons8.com/windows/32/000000/sun.png" /></button>
+			<button id="clear-button"><img src="https://img.icons8.com/windows/32/000000/clear-symbol.png" /></button>
+		</div>
 	</div>
+
 
 	<script>
 		const alphabet = {
@@ -121,12 +163,14 @@
 
 		const theme = localStorage.getItem('theme');
 		const input = document.getElementById('input');
+		const readonlyInput = document.getElementById('readonly-input');
 
 		const copyButton = document.getElementById('copy-button');
 		const themeButton = document.getElementById('theme-button');
 		const clearButton = document.getElementById('clear-button');
 
 		input.value = localStorage.getItem('value') || '';
+		readonlyInput.placeholder = decode(input.value) || 'Decrypted Text..';
 
 		input.addEventListener('input', function () {
 			let newValue = '';
@@ -139,12 +183,28 @@
 			}
 
 			input.value = newValue;
+			readonlyInput.placeholder = decode(input.value) || 'Decrypted Text..';
 			localStorage.setItem('value', input.value);
 		});
+
+		input.addEventListener('keydown', function (event) {
+			if (event.keyCode === 8) {
+				const lastChar = input.value.slice(-1);
+				const secondLastChar = input.value.slice(-2, -1);
+
+				const normalLetter = Object.values(alphabet).includes(secondLastChar + lastChar);
+				if (normalLetter) input.value = input.value.slice(0, -2);
+				else input.value = input.value.slice(0, -1);
+
+				readonlyInput.placeholder = decode(input.value) || 'Decrypted Text..';
+			}
+		});
+
 
 		if (theme === 'dark') {
 			document.body.classList.add('dark');
 			document.getElementById('input').classList.add('dark');
+			document.getElementById('readonly-input').classList.add('dark');
 
 			themeButton.classList.add('dark');
 			themeButton.innerHTML = '<img src="https://img.icons8.com/windows/32/ffffff/moon.png"/>';
@@ -159,6 +219,7 @@
 		themeButton.addEventListener('click', () => {
 			document.body.classList.toggle('dark');
 			document.getElementById('input').classList.toggle('dark');
+			document.getElementById('readonly-input').classList.toggle('dark');
 
 			themeButton.classList.toggle('dark');
 			copyButton.classList.toggle('dark');
@@ -195,6 +256,33 @@
 			input.value = '';
 			input.focus();
 		});
+
+		function decode(wholeText) {
+			if (!wholeText) return 'Decrypted Text..'
+			// split it into by spaces and then by 2 characters, so that it can be decoded, also be careful with the spaces and all the other characters
+			const characters = wholeText.split(' ').map((word) => {
+				const characters = [];
+				for (let i = 0; i < word.length; i += 2) characters.push(word.slice(i, i + 2));
+				return characters;
+			});
+
+			let decodedText = '';
+
+			for (let i = 0; i < characters.length; i++) {
+				const word = characters[i];
+
+				for (let j = 0; j < word.length; j++) {
+					const char = word[j];
+					const normalLetter = Object.values(alphabet).includes(char);
+					if (normalLetter) decodedText += Object.keys(alphabet).find((key) => alphabet[key] === char);
+					else decodedText += char;
+				}
+
+				decodedText += ' ';
+			}
+
+			return decodedText;
+		}
 	</script>
 </body>
 
